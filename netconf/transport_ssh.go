@@ -32,8 +32,8 @@ const (
 // remote device over SSH
 type TransportSSH struct {
 	transportBasicIO
-	sshClient  *ssh.Client
-	sshSession *ssh.Session
+	SshClient  *ssh.Client
+	SshSession *ssh.Session
 }
 
 // Close closes an existing SSH session and socket if they exist.
@@ -44,18 +44,18 @@ func (t *TransportSSH) Close() error {
 	}
 
 	// Close the SSH Session if we have one
-	if t.sshSession != nil {
-		if err := t.sshSession.Close(); err != nil {
+	if t.SshSession != nil {
+		if err := t.SshSession.Close(); err != nil {
 			// If we receive an error when trying to close the session, then
 			// lets try to close the socket, otherwise it will be left open
-			t.sshClient.Close()
+			t.SshClient.Close()
 			return err
 		}
 	}
 
 	// Close the socket
-	if t.sshClient != nil {
-		return t.sshClient.Close()
+	if t.SshClient != nil {
+		return t.SshClient.Close()
 	}
 	return fmt.Errorf("No connection to close")
 }
@@ -76,7 +76,7 @@ func (t *TransportSSH) Dial(target string, config *ssh.ClientConfig) error {
 
 	var err error
 
-	t.sshClient, err = ssh.Dial("tcp", target, config)
+	t.SshClient, err = ssh.Dial("tcp", target, config)
 	if err != nil {
 		return err
 	}
@@ -88,23 +88,23 @@ func (t *TransportSSH) Dial(target string, config *ssh.ClientConfig) error {
 func (t *TransportSSH) setupSession() error {
 	var err error
 
-	t.sshSession, err = t.sshClient.NewSession()
+	t.SshSession, err = t.SshClient.NewSession()
 	if err != nil {
 		return err
 	}
 
-	writer, err := t.sshSession.StdinPipe()
+	writer, err := t.SshSession.StdinPipe()
 	if err != nil {
 		return err
 	}
 
-	reader, err := t.sshSession.StdoutPipe()
+	reader, err := t.SshSession.StdoutPipe()
 	if err != nil {
 		return err
 	}
 
 	t.ReadWriteCloser = NewReadWriteCloser(reader, writer)
-	return t.sshSession.RequestSubsystem(sshNetconfSubsystem)
+	return t.SshSession.RequestSubsystem(sshNetconfSubsystem)
 }
 
 // NewSSHSession creates a new NETCONF session using an existing net.Conn.
@@ -151,7 +151,7 @@ func DialSSHTimeout(target string, config *ssh.ClientConfig, timeout time.Durati
 		ticker := time.NewTicker(timeout / 2)
 		defer ticker.Stop()
 		for range ticker.C {
-			_, _, err := t.sshClient.Conn.SendRequest("KEEP_ALIVE", true, nil)
+			_, _, err := t.SshClient.Conn.SendRequest("KEEP_ALIVE", true, nil)
 			if err != nil {
 				return
 			}
@@ -234,7 +234,7 @@ func connToTransport(conn net.Conn, config *ssh.ClientConfig) (*TransportSSH, er
 	}
 
 	t := &TransportSSH{}
-	t.sshClient = ssh.NewClient(c, chans, reqs)
+	t.SshClient = ssh.NewClient(c, chans, reqs)
 
 	err = t.setupSession()
 	if err != nil {
