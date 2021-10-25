@@ -51,11 +51,12 @@ func (cl *CallhomeListener) Initialize(user, pass string) error{
 }
 
 func (cl *CallhomeListener) Connection(){
-    sshConn, sshChan, req, _ := ssh.NewClientConn(cl.conn, "", cl.sshConfig)
-    client := ssh.NewClient(sshConn, sshChan, req)
-    session,_ := client.NewSession()
-    session.RequestSubsystem("netconf")
-    var stdoutBuf bytes.Buffer
-    session.Stdout = &stdoutBuf
-    defer cl.conn.Close()
+    connToTransport(cl.conn, cl.sshConfig)
+    // sshConn, sshChan, req, _ := ssh.NewClientConn(cl.conn, "", cl.sshConfig)
+    // client := ssh.NewClient(sshConn, sshChan, req)
+    // session,_ := client.NewSession()
+    // session.RequestSubsystem(sshNetconfSubsystem)
+    // var stdoutBuf bytes.Buffer
+    // session.Stdout = &stdoutBuf
+    // defer cl.conn.Close()
 }
