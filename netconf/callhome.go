@@ -11,7 +11,7 @@ const (
     CONN_TYPE = "tcp"
 )
 
-struct CallhomeListener struct{
+type CallhomeListener struct{
 	conn net.Conn
 	sshConfig *ssh.ClientConfig
 }
