@@ -3,6 +3,10 @@ package netconf
 import (
 	"net"
     "golang.org/x/crypto/ssh"
+    "log"
+    "time"
+    "fmt"
+    "bytes"
 )
 
 const (
@@ -27,9 +31,8 @@ func (cl *CallhomeListener) Initialize(user, pass string) error{
             return nil
         },
         Timeout: time.Second * 600,
-
     }
-    sshConfig = &client_config
+    cl.sshConfig = &client_config
 
     l, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
 	defer l.Close()
@@ -43,16 +46,16 @@ func (cl *CallhomeListener) Initialize(user, pass string) error{
             fmt.Println("Error accepting: ", err.Error())
 			return err
         }
-        Connection(conn)
+        cl.Connection()
     }
 }
 
 func (cl *CallhomeListener) Connection(){
-    sshConn, sshChan, req, _ := ssh.NewClientConn(cl.Conn, "", cl.sshConfig)
+    sshConn, sshChan, req, _ := ssh.NewClientConn(cl.conn, "", cl.sshConfig)
     client := ssh.NewClient(sshConn, sshChan, req)
     session,_ := client.NewSession()
     session.RequestSubsystem("netconf")
     var stdoutBuf bytes.Buffer
     session.Stdout = &stdoutBuf
-    defer c.Close()
+    defer cl.conn.Close()
 }
