@@ -11,12 +11,12 @@ const (
     CONN_TYPE = "tcp"
 )
 
-struct callhomeListener{
+struct CallhomeListener struct{
 	conn net.Conn
 	sshConfig *ssh.ClientConfig
 }
 
-func (cl *callhomeListener) Initialize(user, pass string) error{
+func (cl *CallhomeListener) Initialize(user, pass string) error{
 	client_config := ssh.ClientConfig{
         User: user,
         Auth: []ssh.AuthMethod{ssh.Password(pass)},
@@ -38,7 +38,7 @@ func (cl *callhomeListener) Initialize(user, pass string) error{
 		return err
     }
     for {
-        cl.conn, err := l.Accept()
+        cl.conn, err = l.Accept()
         if err != nil {
             fmt.Println("Error accepting: ", err.Error())
 			return err
@@ -47,7 +47,7 @@ func (cl *callhomeListener) Initialize(user, pass string) error{
     }
 }
 
-func (cl *callhomeListener) Connection(){
+func (cl *CallhomeListener) Connection(){
     sshConn, sshChan, req, _ := ssh.NewClientConn(cl.Conn, "", cl.sshConfig)
     client := ssh.NewClient(sshConn, sshChan, req)
     session,_ := client.NewSession()
