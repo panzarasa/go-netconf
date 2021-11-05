@@ -3,6 +3,9 @@ package netconf
 import (
 	"net"
     "golang.org/x/crypto/ssh"
+    "fmt"
+    "time"
+    "bytes"
 )
 
 const (
@@ -11,7 +14,7 @@ const (
     CONN_TYPE = "tcp"
 )
 
-struct CallhomeListener struct{
+type CallhomeListener struct{
 	conn net.Conn
 	sshConfig *ssh.ClientConfig
 }
@@ -21,15 +24,15 @@ func (cl *CallhomeListener) Initialize(user, pass string) error{
         User: user,
         Auth: []ssh.AuthMethod{ssh.Password(pass)},
         HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-            log.Println(hostname)
-            log.Println(remote)
-            log.Println(key)
+            fmt.Println(hostname)
+            fmt.Println(remote)
+            fmt.Println(key)
             return nil
         },
         Timeout: time.Second * 600,
 
     }
-    sshConfig = &client_config
+    cl.sshConfig = &client_config
 
     l, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
 	defer l.Close()
@@ -43,16 +46,15 @@ func (cl *CallhomeListener) Initialize(user, pass string) error{
             fmt.Println("Error accepting: ", err.Error())
 			return err
         }
-        Connection(conn)
+        cl.Connection()
     }
 }
 
 func (cl *CallhomeListener) Connection(){
-    sshConn, sshChan, req, _ := ssh.NewClientConn(cl.Conn, "", cl.sshConfig)
+    sshConn, sshChan, req, _ := ssh.NewClientConn(cl.conn, "", cl.sshConfig)
     client := ssh.NewClient(sshConn, sshChan, req)
     session,_ := client.NewSession()
     session.RequestSubsystem("netconf")
     var stdoutBuf bytes.Buffer
     session.Stdout = &stdoutBuf
-    defer c.Close()
 }
